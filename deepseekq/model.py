@@ -15,7 +15,6 @@ from tokenizer import ByteBPETokenizer
 KVCache = List[Tuple[torch.Tensor, torch.Tensor]]
 
 
-# --------------------------------------------------------------------- config
 @dataclass
 class DeepSeekConfig:
     """Default preset is ~100M parameters (verified, see ``num_parameters``)."""
@@ -72,7 +71,6 @@ class DeepSeekConfig:
             json.dump(asdict(self), f, indent=2)
 
 
-# ---------------------------------------------------------------- primitives
 class RMSNorm(nn.Module):
     def __init__(self, dim: int, eps: float = 1e-5):
         super().__init__()
@@ -148,9 +146,6 @@ class CausalSelfAttention(nn.Module):
         k = repeat_kv(k, self.n_rep)
         v = repeat_kv(v, self.n_rep)
 
-        # A single query token attending to the whole cache needs no mask;
-        # a multi-token chunk (prefill) needs the causal mask.
-        is_causal = t > 1
         if self._sdpa:
             y = F.scaled_dot_product_attention(
                 q, k, v,
@@ -251,7 +246,6 @@ class TransformerBlock(nn.Module):
         return x, present, aux
 
 
-# -------------------------------------------------------------------- model
 class DeepSeekForCausalLM(nn.Module):
     def __init__(self, config: DeepSeekConfig):
         super().__init__()
@@ -285,7 +279,6 @@ class DeepSeekForCausalLM(nn.Module):
         elif isinstance(module, nn.Embedding):
             nn.init.normal_(module.weight, mean=0.0, std=self.config.initializer_range)
 
-    # ------------------------------------------------------------- utilities
     @property
     def device(self) -> torch.device:
         return next(self.parameters()).device
@@ -309,7 +302,6 @@ class DeepSeekForCausalLM(nn.Module):
         sin = self.rope_sin[start:end].to(device=device, dtype=dtype)
         return cos, sin
 
-    # --------------------------------------------------------------- forward
     def forward(self, input_ids, labels=None, past_key_values=None, use_cache=False):
         b, t = input_ids.shape
         if t == 0:
@@ -358,7 +350,6 @@ class DeepSeekForCausalLM(nn.Module):
             "past_key_values": presents if use_cache else None,
         }
 
-    # -------------------------------------------------------------- sampling
     @torch.no_grad()
     def generate(self, input_ids: torch.Tensor, **kwargs) -> torch.Tensor:
         """Autoregressive sampling with a KV cache. Returns prompt + continuation."""
@@ -454,7 +445,6 @@ class DeepSeekForCausalLM(nn.Module):
             tokens = tokens[len(ids):]
         return tokenizer.decode(tokens)
 
-    # ------------------------------------------------------------ persistence
     def configure_optimizers(self, lr: float, weight_decay: float = 0.1,
                              betas: Tuple[float, float] = (0.9, 0.95)):
         """Decay matrices, never decay norms/biases/embeddings."""
