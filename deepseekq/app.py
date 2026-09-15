@@ -85,7 +85,6 @@ model, tokenizer, DEVICE, TRAINED = load_artifacts()
 log.info("ready: %s params on %s (trained=%s)", f"{model.num_parameters():,}", DEVICE, TRAINED)
 
 
-# ------------------------------------------------------------------ helpers
 class BadRequest(Exception):
     pass
 
@@ -132,8 +131,6 @@ def parse_payload() -> Dict[str, Any]:
         "repetition_penalty": _number(payload, "repetition_penalty", 1.1, 1.0, 2.0),
     }
 
-
-# ------------------------------------------------------------------- routes
 @app.get("/")
 def index():
     return jsonify({
