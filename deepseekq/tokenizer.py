@@ -1,16 +1,3 @@
-"""Byte-level BPE tokenizer.
-
-Design notes
-------------
-* Ids ``0..n_special-1`` are reserved for special tokens (``<pad> <unk> <bos> <eos>``).
-* Ids ``n_special .. n_special+255`` are the 256 raw bytes, so *any* input is
-  encodable and no ``<unk>`` is ever needed for ordinary text.
-* Ids above that are learned BPE merges, in the order they were learned.
-
-The tokenizer is dependency-free (stdlib ``re`` only) and fully round-trip safe:
-``decode(encode(s)) == s`` for every ``str`` s.
-"""
-
 from __future__ import annotations
 
 import json
@@ -19,11 +6,6 @@ import re
 from collections import Counter
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
-# GPT-style pre-tokenisation. Uses only stdlib `re` (no `regex` dependency):
-# `[^\W\d_]` is the unicode-aware "letter" class under `re`.
-#   contraction | letters | 1-3 digits | symbols/punctuation (incl. `_`)
-#   | trailing whitespace | whitespace | single-char fallback
-# The final `.` alternative guarantees no character is ever silently dropped.
 SPLIT_PATTERN = re.compile(
     r"""'(?:[sdmt]|ll|ve|re)| ?[^\W\d_]+| ?\d{1,3}| ?(?:(?![^\W\d_])[^\s\d])+|\s+(?!\S)|\s+|."""
 )
@@ -49,7 +31,6 @@ class ByteBPETokenizer:
         self.merges: Dict[Pair, int] = dict(merges or {})
         self._rebuild()
 
-    # ------------------------------------------------------------------ setup
     def _rebuild(self) -> None:
         """Rebuild id -> bytes table and the merge-rank table."""
         self.vocab: Dict[int, bytes] = {}
@@ -78,7 +59,6 @@ class ByteBPETokenizer:
     def eos_token_id(self) -> int:
         return self.special_id_map.get("<eos>", 3)
 
-    # --------------------------------------------------------------- training
     def train(self, text: str, vocab_size: int, verbose: bool = False) -> "ByteBPETokenizer":
         """Learn merges from ``text`` until the vocabulary reaches ``vocab_size``."""
         floor = self.n_special + 256
@@ -114,7 +94,6 @@ class ByteBPETokenizer:
         self._rebuild()
         return self
 
-    # --------------------------------------------------------------- encoding
     def _encode_chunk(self, chunk: str) -> List[int]:
         cached = self._cache.get(chunk)
         if cached is not None:
@@ -165,7 +144,6 @@ class ByteBPETokenizer:
             return b""
         return self.vocab.get(token_id, b"")
 
-    # ----------------------------------------------------------- (de)serialise
     def save(self, path: str) -> None:
         directory = os.path.dirname(path)
         if directory:
