@@ -1,15 +1,3 @@
-"""Training loop for the DeepSeek-style model.
-
-Usage
------
-    # train a tokenizer, then the model, on a plain-text corpus
-    python training.py --data corpus.txt --train-tokenizer --vocab-size 8000 \
-        --preset small --steps 2000 --batch-size 8
-
-    # quick CPU smoke test
-    python training.py --data corpus.txt --preset tiny --steps 20 --device cpu
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -49,7 +37,6 @@ def pick_device(requested: Optional[str] = None) -> torch.device:
     return torch.device("cpu")
 
 
-# ------------------------------------------------------------------- dataset
 class PackedTextDataset:
     """Encodes a corpus once and packs it into one contiguous token stream.
 
@@ -94,7 +81,6 @@ def build_dataset(text_path: str) -> str:
         return f.read()
 
 
-# ------------------------------------------------------------------ schedule
 def lr_at(step: int, base_lr: float, warmup: int, total: int, min_ratio: float = 0.1) -> float:
     if step < warmup:
         return base_lr * (step + 1) / max(warmup, 1)
@@ -122,7 +108,6 @@ def estimate_loss(model, dataset, batch_size, device, eval_iters, autocast_ctx) 
     return out
 
 
-# ---------------------------------------------------------------------- loop
 def train(
     model: DeepSeekForCausalLM,
     dataset: PackedTextDataset,
@@ -241,7 +226,6 @@ def load_checkpoint(model: DeepSeekForCausalLM, path: str) -> DeepSeekForCausalL
     return model
 
 
-# ----------------------------------------------------------------------- CLI
 def main() -> None:
     p = argparse.ArgumentParser(description="Train the DeepSeek-style model")
     p.add_argument("--data", required=True, help="path to a UTF-8 text corpus")
