@@ -1,5 +1,3 @@
-"""Correctness tests.  Run with:  python tests.py   (or: python -m unittest tests -v)"""
-
 import os
 import tempfile
 import unittest
