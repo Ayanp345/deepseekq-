@@ -1,16 +1,3 @@
-"""DeepSeek-inspired decoder-only transformer.
-
-Architecture
-------------
-* Pre-norm residual blocks with RMSNorm
-* Rotary position embeddings (RoPE) - no learned position table, so the model
-  extrapolates and the context length can be raised at inference time
-* Grouped-query attention (GQA) - fewer KV heads means a much smaller KV cache
-* SwiGLU feed-forward, or an optional DeepSeek-style MoE with shared experts
-* Fused scaled-dot-product attention (FlashAttention kernels when available)
-* Incremental KV cache, so generation is O(n) instead of O(n^2)
-"""
-
 from __future__ import annotations
 
 import json
