@@ -1,19 +1,3 @@
-"""Flask inference service.
-
-Environment
------------
-    MODEL_DIR   directory holding config.json / model.pt / tokenizer.json
-                (default: "checkpoints")
-    DEVICE      cuda | cpu | mps (default: auto)
-    API_KEY     if set, requests must send  Authorization: Bearer <key>
-    MAX_NEW_TOKENS  hard server-side ceiling (default 512)
-    PORT        default 5000
-
-Run in production with a WSGI server rather than the dev server:
-    gunicorn -w 1 -t 120 -b 0.0.0.0:5000 app:app
-(one worker: each worker loads its own copy of the weights)
-"""
-
 from __future__ import annotations
 
 import codecs
